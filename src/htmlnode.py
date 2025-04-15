@@ -32,6 +32,20 @@ class LeafNode(HTMLNode):
         return f"<{self.tag}{props_str}>{self.value}</{self.tag}>"
     
 class ParentNode(HTMLNode):
-    def __init__(self, children, tag, props=None):
+    def __init__(self, tag, children, props=None):
+        if not isinstance(tag, str) or not tag.strip():
+            raise ValueError("ParentNode 'tag' must be a non-empty string")
+        if not isinstance(children, list) or not all(isinstance(child, HTMLNode) for child in children):
+            raise ValueError("ParentNode 'children' must be a list of HTMLNode instances")
         super().__init__(None, children, props, tag)
     
+    def to_html(self):
+        if self.tag is None:
+            raise ValueError("ParentNode tag cannot be None")
+        if not self.children:
+            raise ValueError("ParentNode must have children")
+        if not isinstance(self.children, list) or not all(isinstance(child, HTMLNode) for child in self.children):
+            raise ValueError("ParentNode children must be a list of HTMLNode instances")
+        props_str = self.props_to_html()
+        children_html = "".join([child.to_html() for child in self.children])
+        return f"<{self.tag}{props_str}>{children_html}</{self.tag}>"
