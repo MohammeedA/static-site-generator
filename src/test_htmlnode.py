@@ -28,17 +28,15 @@ class TestHTMLNode(unittest.TestCase):
 
     def test_props_to_html_single_prop(self):
         node = HTMLNode(props={"class": "single"})
-        self.assertEqual(node.props_to_html(), 'class="single"')
+        self.assertEqual(node.props_to_html(), ' class="single"')
 
     def test_props_to_html_multiple_props(self):
         result = self.full_node.props_to_html()
-        self.assertIn('class="test-class"', result)
-        self.assertIn('id="test-id"', result)
-        self.assertEqual(len(result.split()), 2)
+        self.assertEqual(result, ' class="test-class" id="test-id"')
 
     def test_props_to_html_special_characters(self):
         node = HTMLNode(props={"data-test": "value&<>"})
-        self.assertEqual(node.props_to_html(), 'data-test="value&<>"')
+        self.assertEqual(node.props_to_html(), ' data-test="value&<>"')
 
     def test_to_html_raises_error(self):
         with self.assertRaises(NotImplementedError):
