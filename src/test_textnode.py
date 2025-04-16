@@ -8,9 +8,9 @@ class TestTextNode(unittest.TestCase):
     """
     TEST EQUALS FOR DIFFERENT TEXT TYPES
     """
-    def test_eq_normal(self):
-        node = TextNode("This is a text node", TextType.NORMAL)
-        node2 = TextNode("This is a text node", TextType.NORMAL)
+    def test_eq_TEXT(self):
+        node = TextNode("This is a text node", TextType.TEXT)
+        node2 = TextNode("This is a text node", TextType.TEXT)
         self.assertEqual(node, node2)
     
     def test_eq_bold(self):
@@ -41,18 +41,18 @@ class TestTextNode(unittest.TestCase):
     ####################
     """
     def test_not_eq_text(self):
-        node = TextNode("This is a text node", TextType.NORMAL)
-        node2 = TextNode("This is also a text node", TextType.NORMAL)
+        node = TextNode("This is a text node", TextType.TEXT)
+        node2 = TextNode("This is also a text node", TextType.TEXT)
         self.assertNotEqual(node, node2)
 
     def test_not_eq_text_types(self):
-        node = TextNode("This is a text node", TextType.NORMAL)
+        node = TextNode("This is a text node", TextType.TEXT)
         node2 = TextNode("This is a text node", TextType.BOLD)
         self.assertNotEqual(node, node2)
     
     def test_not_eq_url(self):
-        node = TextNode("This is a text node", TextType.NORMAL, "www.boot.dev")
-        node2 = TextNode("This is a text node", TextType.NORMAL, "www.vecka.nu")
+        node = TextNode("This is a text node", TextType.TEXT, "www.boot.dev")
+        node2 = TextNode("This is a text node", TextType.TEXT, "www.vecka.nu")
         self.assertNotEqual(node, node2)
 
 if __name__ == "__main__":

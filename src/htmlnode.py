@@ -56,7 +56,7 @@ def text_node_to_html_node(text_node):
     if not isinstance(text_node, TextNode):
         raise ValueError("Expected a TextNode")
     match text_node.text_type:
-        case TextType.NORMAL:
+        case TextType.TEXT:
             return LeafNode(None, text_node.text)
         case TextType.BOLD:
             return LeafNode("b", text_node.text)

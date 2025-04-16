@@ -6,7 +6,7 @@ from textnode import TextNode, TextType
 class TestTextNodeToHtml(unittest.TestCase):
 
     def test_text(self):
-        node = TextNode("This is a text node", TextType.NORMAL)
+        node = TextNode("This is a text node", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "This is a text node")
@@ -22,7 +22,7 @@ class TestTextNodeToHtml(unittest.TestCase):
 
     def test_empty_text_node(self):
         # Test with empty string
-        node = TextNode("", TextType.NORMAL)
+        node = TextNode("", TextType.TEXT)
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, None)
         self.assertEqual(html_node.value, "")
