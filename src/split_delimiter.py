@@ -1,62 +1,51 @@
 from textnode import TextNode, TextType
 
 def split_nodes_delimiter(
-    nodes: list[TextNode], delimiter: str, text_type: TextType
+    old_nodes: list[TextNode], delimiter: str, text_type: TextType
 ) -> list[TextNode]:
     """
     Splits a list of TextNodes into groups based on a delimiter.
     """
-    #result = []
-    #current_group = []
 
     result = []
-    for node in nodes:
-        if node.text_type != TextType.TEXT or delimiter not in node.text:
-            # If the node is not TEXT or doesn't contain the delimiter,
-            result.append(node)
+    
+    for old_node in old_nodes:
+        # If not a text node, add it unchanged
+        if old_node.text_type != TextType.TEXT:
+            result.append(old_node)
             continue
-        # Split the text by the delimiter
-        splits = node.text.split(delimiter)
-        if len(splits) == 1:
-            # If the delimiter is not found, just append the node
-            result.append(node)
-            continue
-        # Check for correct Markdown syntax
-        if len(splits) % 2 == 0:
-            raise ValueError("invalid Markdown syntax")
-        for i in range(len(splits)):
-            if i % 2 == 0 and splits[i] != "":
-                result.append(TextNode(splits[i], TextType.TEXT))
-            else:
-                result.append(TextNode(splits[i], text_type))
-        print(result)
+        
+        # Process text node
+        text = old_node.text
+        remaining_text = text
+        new_nodes = []
+        
+        # Look for delimiter pairs
+        while delimiter in remaining_text:
+            # Find the first delimiter
+            start_index = remaining_text.find(delimiter)
+            
+            # Add text before delimiter as normal text (if any)
+            if start_index > 0:
+                new_nodes.append(TextNode(remaining_text[:start_index], TextType.TEXT))
+            
+            # Find the closing delimiter
+            end_index = remaining_text.find(delimiter, start_index + len(delimiter))
+            if end_index == -1:
+                raise ValueError(f"Closing delimiter not found: {delimiter}")
+            
+            # Extract the content between delimiters
+            content = remaining_text[start_index + len(delimiter):end_index]
+            new_nodes.append(TextNode(content, text_type))
+            
+            # Continue with the remaining text
+            remaining_text = remaining_text[end_index + len(delimiter):]
+        
+        # Add any remaining text as normal text
+        if remaining_text:
+            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+        
+        # Add the new nodes to the result
+        result.extend(new_nodes)
+    
     return result
-
-"""    for node in nodes:
-        if node.text_type != TextType.TEXT:
-            result.append(node)
-        elif delimiter in node.text:
-            # Split the text by the delimiter
-            md_text = node.text.split(delimiter)
-            # Check for correct Markdown syntax
-            if len(md_text) % 2 == 0:
-                raise Exception("invalid Markdown syntax")
-            for text in md_text:
-                # Check if current group is empty
-                if not current_group:
-                    current_group.append(TextNode(text, TextType.TEXT))
-                else:
-                    if len(current_group) == 2:
-                        current_group.append(TextNode(text,TextType.TEXT))
-                        result.extend(current_group)
-                        current_group = []
-                    else:
-                        current_group.append(TextNode(text, text_type))
-        else:
-            current_group.append(node)
-    # Append any remaining nodes in the current group
-    # to the result
-    if current_group:
-        result.extend(current_group)"""
-
-    #return result

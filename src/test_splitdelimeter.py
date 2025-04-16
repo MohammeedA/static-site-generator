@@ -20,13 +20,12 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         nodes = [node]
         result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
         print(result)
-        self.assertEqual(len(result), 4)
-        self.assertEqual(result[0].text, "")
-        self.assertEqual(result[1].text, "bold")
-        self.assertEqual(result[1].text_type, TextType.BOLD)
-        self.assertEqual(result[2].text, " and ")
-        self.assertEqual(result[3].text, "more bold")
-        self.assertEqual(result[3].text_type, TextType.BOLD)
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0].text, "bold")
+        self.assertEqual(result[0].text_type, TextType.BOLD)
+        self.assertEqual(result[1].text, " and ")
+        self.assertEqual(result[2].text, "more bold")
+        self.assertEqual(result[2].text_type, TextType.BOLD)
 
     def test_no_delimiters(self):
         node = TextNode("Plain text without delimiters", TextType.TEXT)
@@ -41,7 +40,7 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         nodes = [node]
         with self.assertRaises(Exception) as context:
             split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        self.assertTrue("invalid Markdown syntax" in str(context.exception))
+        self.assertTrue(f"Closing delimiter not found: *" in str(context.exception))
 
     def test_non_TEXT_node(self):
         node = TextNode("*already bold*", TextType.BOLD)
