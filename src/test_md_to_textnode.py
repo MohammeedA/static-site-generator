@@ -1,5 +1,5 @@
 import unittest
-from split_delimiter import split_nodes_delimiter
+from md_to_textnode import split_nodes_delimiter, extract_markdown_images
 from textnode import TextNode, TextType
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -19,7 +19,6 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         node = TextNode("*bold* and *more bold*", TextType.TEXT)
         nodes = [node]
         result = split_nodes_delimiter(nodes, "*", TextType.BOLD)
-        print(result)
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0].text, "bold")
         self.assertEqual(result[0].text_type, TextType.BOLD)
@@ -49,6 +48,12 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].text, "*already bold*")
         self.assertEqual(result[0].text_type, TextType.BOLD)
+    
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
 
 if __name__ == '__main__':
     unittest.main()
