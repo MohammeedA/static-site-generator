@@ -144,3 +144,20 @@ def split_nodes_link(old_nodes):
         result.extend(new_nodes)
             
     return result
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    """
+    Converts markdown text to a list of TextNodes.
+    """
+    nodes = [TextNode(text, TextType.TEXT)]
+    
+    # Split nodes based on delimiters (e.g., * for bold)
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    
+    # Split nodes based on images and links
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    
+    return nodes

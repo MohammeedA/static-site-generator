@@ -1,5 +1,8 @@
 import unittest
-from md_to_textnode import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image
+from md_to_textnode import split_nodes_delimiter, text_to_textnodes
+from md_to_textnode import extract_markdown_images
+from md_to_textnode import extract_markdown_links
+from md_to_textnode import split_nodes_image
 from textnode import TextNode, TextType
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -103,5 +106,120 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             new_nodes,
         )
 
+    def test_split_images_empty(self):
+        node = TextNode("Text without images", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual([node], new_nodes)
+    
+    def test_split_images_non_text_node(self):
+        node = TextNode("![img](url)", TextType.BOLD)  
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual([node], new_nodes)
+    
+    def test_split_images_multiple_nodes(self):
+        nodes = [
+            TextNode("Start ![first](url1) middle", TextType.TEXT),
+            TextNode("Not an image", TextType.BOLD),
+            TextNode("End ![second](url2)", TextType.TEXT)
+        ]
+        result = split_nodes_image(nodes)
+        expected = [
+            TextNode("Start ", TextType.TEXT),
+            TextNode("first", TextType.IMAGE, "url1"),
+            TextNode(" middle", TextType.TEXT),
+            TextNode("Not an image", TextType.BOLD),
+            TextNode("End ", TextType.TEXT),
+            TextNode("second", TextType.IMAGE, "url2")
+        ]
+        self.assertListEqual(expected, result)
+    
+    def test_split_images_with_special_chars(self):
+        node = TextNode(
+            "![image with spaces](https://example.com/img%20name.jpg)",
+            TextType.TEXT
+        )
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("image with spaces", TextType.IMAGE, "https://example.com/img%20name.jpg")
+        ]
+        self.assertListEqual(expected, result)
+    
+    def test_split_images_consecutive(self):
+        node = TextNode(
+            "![first](url1)![second](url2)",
+            TextType.TEXT
+        )
+        result = split_nodes_image([node])
+        expected = [
+            TextNode("first", TextType.IMAGE, "url1"),
+            TextNode("second", TextType.IMAGE, "url2")
+        ]
+        self.assertListEqual(expected, result)
+    
+    def test_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+        self.assertListEqual(expected, result)
+    
+    # NESTED DELIMETERS NOT COVERED BY CODE YET
+    # def test_text_to_textnodes_nested_bold_and_italic(self):
+    #     text = "This is **bold and _italic_** text."
+    #     result = text_to_textnodes(text)
+    #     expected = [
+    #         TextNode("This is ", TextType.TEXT),
+    #         TextNode("bold and ", TextType.BOLD),
+    #         TextNode("italic", TextType.ITALIC),
+    #         TextNode(" text.", TextType.TEXT),
+    #     ]
+    #     self.assertListEqual(expected, result)
+
+    def test_text_to_textnodes_multiple_images(self):
+        text = "Here is ![image1](https://example.com/img1.png) and ![image2](https://example.com/img2.png)."
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("Here is ", TextType.TEXT),
+            TextNode("image1", TextType.IMAGE, "https://example.com/img1.png"),
+            TextNode(" and ", TextType.TEXT),
+            TextNode("image2", TextType.IMAGE, "https://example.com/img2.png"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertListEqual(expected, result)
+
+    def test_text_to_textnodes_mixed_content(self):
+        text = "This is **bold**, _italic_, and `code` with a ![image](https://example.com/image.png) and a [link](https://example.com)."
+        result = text_to_textnodes(text)
+        expected = [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(", ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(", and ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+            TextNode(" with a ", TextType.TEXT),
+            TextNode("image", TextType.IMAGE, "https://example.com/image.png"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://example.com"),
+            TextNode(".", TextType.TEXT),
+        ]
+        self.assertListEqual(expected, result)
+
+    def test_text_to_textnodes_unclosed_delimiter(self):
+        text = "This is **bold and _italic text."
+        with self.assertRaises(ValueError) as context:
+            text_to_textnodes(text)
+        self.assertTrue("Closing delimiter not found" in str(context.exception))
+
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
