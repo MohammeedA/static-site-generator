@@ -1,9 +1,10 @@
 import unittest
-from md_to_textnode import split_nodes_delimiter, text_to_textnodes
-from md_to_textnode import extract_markdown_images
-from md_to_textnode import extract_markdown_links
-from md_to_textnode import split_nodes_image
-from textnode import TextNode, TextType
+from src.md_to_textnode import split_nodes_delimiter, text_to_textnodes
+from src.md_to_textnode import extract_markdown_images
+from src.md_to_textnode import extract_markdown_links
+from src.md_to_textnode import split_nodes_image
+from src.md_to_textnode import markdown_to_blocks
+from src.textnode import TextNode, TextType
 
 class TestSplitNodesDelimiter(unittest.TestCase):
     def test_basic_split(self):
@@ -220,6 +221,70 @@ class TestSplitNodesDelimiter(unittest.TestCase):
         with self.assertRaises(ValueError) as context:
             text_to_textnodes(text)
         self.assertTrue("Closing delimiter not found" in str(context.exception))
+
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_empty_text(self):
+        text = ""
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, [])
+
+    def test_single_block(self):
+        text = "This is a single block of text"
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, ["This is a single block of text"])
+
+    def test_two_blocks(self):
+        text = "This is the first block\n\nThis is the second block"
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, [
+            "This is the first block",
+            "This is the second block"
+        ])
+
+    def test_three_blocks_extra_newlines(self):
+        text = "This is the first block\n\n\nThis is the second block\n\nThis is the third block"
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, [
+            "This is the first block",
+            "This is the second block",
+            "This is the third block"
+        ])
+
+    def test_multiple_line_blocks(self):
+        text = "This is a block\nwith multiple\nlines\n\nThis is another block\nwith multiple lines"
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, [
+            "This is a block\nwith multiple\nlines",
+            "This is another block\nwith multiple lines"
+        ])
+
+    def test_strips_whitespace(self):
+        text = "  This block has spaces  \n\n  This block too  "
+        blocks = markdown_to_blocks(text)
+        self.assertEqual(blocks, [
+            "This block has spaces",
+            "This block too"
+        ])
+
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

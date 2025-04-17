@@ -1,4 +1,4 @@
-from textnode import TextNode, TextType
+from src.textnode import TextNode, TextType
 import re
 
 def split_nodes_delimiter(
@@ -161,3 +161,33 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = split_nodes_link(nodes)
     
     return nodes
+
+def markdown_to_blocks(text: str) -> list[str]:
+    """
+    Converts markdown text to a list of blocks.
+    Each block is separated by one or more empty lines.
+    """
+    if not text:
+        return []
+
+    blocks = []
+    current_block = []
+    
+    # Split the text into lines and process them
+    lines = text.split("\n")
+    
+    for line in lines:
+        # If we encounter an empty line and have content in current_block
+        if not line.strip() and current_block:
+            # Join the current block lines and add to blocks
+            blocks.append("\n".join(current_block))
+            current_block = []
+        # If the line has content, add to current block
+        elif line.strip():
+            current_block.append(line.strip())
+    
+    # Don't forget to add the last block if it has content
+    if current_block:
+        blocks.append("\n".join(current_block))
+    
+    return blocks
