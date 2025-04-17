@@ -68,3 +68,79 @@ def extract_markdown_links(text: str) -> list[tuple[str, str]]:
     re_link = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
     # This regex matches markdown link syntax: [anchor text](url)
     return re.findall(re_link, text)
+
+def split_nodes_image(old_nodes):
+    """
+    Splits a list of TextNodes into groups based on images.
+    """
+    result = []
+    
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            result.append(old_node)
+            continue
+        
+        text = old_node.text
+        images = extract_markdown_images(text)
+        
+        if not images:
+            result.append(old_node)
+            continue
+            
+        remaining_text = text
+        new_nodes = []
+        
+        for img_alt, img_url in images:
+            img_text = f"![{img_alt}]({img_url})"
+            start_index = remaining_text.find(img_text)
+            
+            if start_index > 0:
+                new_nodes.append(TextNode(remaining_text[:start_index], TextType.TEXT))
+                
+            new_nodes.append(TextNode(img_alt, TextType.IMAGE, url=img_url))
+            remaining_text = remaining_text[start_index + len(img_text):]
+            
+        if remaining_text:
+            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+            
+        result.extend(new_nodes)
+            
+    return result
+
+def split_nodes_link(old_nodes):
+    """
+    Splits a list of TextNodes into groups based on links.
+    """
+    result = []
+    
+    for old_node in old_nodes:
+        if old_node.text_type != TextType.TEXT:
+            result.append(old_node)
+            continue
+        
+        text = old_node.text
+        links = extract_markdown_links(text)
+        
+        if not links:
+            result.append(old_node)
+            continue
+            
+        remaining_text = text
+        new_nodes = []
+        
+        for link_text, link_url in links:
+            link_md = f"[{link_text}]({link_url})"
+            start_index = remaining_text.find(link_md)
+            
+            if start_index > 0:
+                new_nodes.append(TextNode(remaining_text[:start_index], TextType.TEXT))
+                
+            new_nodes.append(TextNode(link_text, TextType.LINK, url=link_url))
+            remaining_text = remaining_text[start_index + len(link_md):]
+            
+        if remaining_text:
+            new_nodes.append(TextNode(remaining_text, TextType.TEXT))
+            
+        result.extend(new_nodes)
+            
+    return result
