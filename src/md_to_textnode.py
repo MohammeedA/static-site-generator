@@ -58,3 +58,13 @@ def extract_markdown_images(text: str) -> list[tuple[str, str]]:
     re_image = r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
     # This regex matches the markdown image syntax: ![alt text](url)
     return re.findall(re_image, text)
+
+def extract_markdown_links(text: str) -> list[tuple[str, str]]:
+    """
+    Extracts links from markdown text.
+    Returns a list of tuples containing (anchor_text, url).
+    Example: For "[link](url)" returns [("link", "url")]
+    """
+    re_link = r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)"
+    # This regex matches markdown link syntax: [anchor text](url)
+    return re.findall(re_link, text)
