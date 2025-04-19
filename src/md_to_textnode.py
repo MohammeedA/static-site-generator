@@ -1,4 +1,4 @@
-from src.textnode import TextNode, TextType, BlockType
+from textnode import TextNode, TextType, BlockType
 import re
 
 def split_nodes_delimiter(
@@ -161,6 +161,22 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = split_nodes_link(nodes)
     
     return nodes
+
+def markdown_to_blocks(text: str) -> list[str]:
+    """
+    Converts markdown text to a list of blocks.
+    Each block is separated by one or more empty lines.
+    Returns a list of non-empty blocks with whitespace stripped from block boundaries.
+    """
+    if not text:
+        return []
+    
+    # Strip leading/trailing whitespace from the entire text first
+    text = text.strip()
+    
+    # Split text into blocks by one or more blank lines and filter out empty blocks
+    blocks = [block.strip() for block in text.split('\n\n')]
+    return [block for block in blocks if block]
 
 def block_to_block_type(block: str) -> BlockType:
     """

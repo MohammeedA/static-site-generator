@@ -1,10 +1,10 @@
 import unittest
-from src.md_to_textnode import split_nodes_delimiter, text_to_textnodes
-from src.md_to_textnode import extract_markdown_images
-from src.md_to_textnode import extract_markdown_links
-from src.md_to_textnode import split_nodes_image
-from src.md_to_textnode import block_to_block_type
-from src.textnode import TextNode, TextType, BlockType
+from md_to_textnode import split_nodes_delimiter, text_to_textnodes
+from md_to_textnode import extract_markdown_images
+from md_to_textnode import extract_markdown_links
+from md_to_textnode import split_nodes_image
+from md_to_textnode import markdown_to_blocks
+from textnode import TextNode, TextType
 
 class TestSplitNodesDelimiter(unittest.TestCase):
     def test_basic_split(self):
@@ -222,39 +222,26 @@ class TestSplitNodesDelimiter(unittest.TestCase):
             text_to_textnodes(text)
         self.assertTrue("Closing delimiter not found" in str(context.exception))
 
-class TestBlockToBlockType(unittest.TestCase):
-    def test_paragraph_block(self):
-        text = "This is a paragraph with some text in it"
-        self.assertEqual(block_to_block_type(text), BlockType.PARAGRAPH)
-        
-    def test_heading_block(self):
-        self.assertEqual(block_to_block_type("# Heading 1"), BlockType.HEADING)
-        self.assertEqual(block_to_block_type("## Heading 2"), BlockType.HEADING)
-        self.assertEqual(block_to_block_type("###### Heading 6"), BlockType.HEADING)
-        
-    def test_code_block(self):
-        text = "```\nprint('Hello World')\n```"
-        self.assertEqual(block_to_block_type(text), BlockType.CODE)
-        
-    def test_quote_block(self):
-        text = "> This is a quote\n> It continues here"
-        self.assertEqual(block_to_block_type(text), BlockType.QUOTE)
-        
-    def test_unordered_list_block(self):
-        text = "- First item\n- Second item\n- Third item"
-        self.assertEqual(block_to_block_type(text), BlockType.UNORDERED_LIST)
-        
-    def test_ordered_list_block(self):
-        text = "1. First item\n2. Second item\n3. Third item"
-        self.assertEqual(block_to_block_type(text), BlockType.ORDERED_LIST)
-        
-    def test_invalid_heading(self):
-        text = "####### Invalid heading"  # 7 #'s
-        self.assertEqual(block_to_block_type(text), BlockType.PARAGRAPH)
-        
-    def test_invalid_ordered_list(self):
-        text = "1. First\n3. Third\n2. Second"  # Out of order
-        self.assertEqual(block_to_block_type(text), BlockType.PARAGRAPH)
+class TestMarkdownToBlocks(unittest.TestCase):
+    def test_markdown_to_blocks(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
