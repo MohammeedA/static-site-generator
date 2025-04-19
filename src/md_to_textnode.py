@@ -162,21 +162,20 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     
     return nodes
 
-def markdown_to_blocks(text: str) -> list[str]:
+def markdown_to_blocks(markdown: str) -> list[str]:
     """
     Converts markdown text to a list of blocks.
     Each block is separated by one or more empty lines.
-    Returns a list of non-empty blocks with whitespace stripped from block boundaries.
+    Returns a list of non-empty blocks with whitespace stripped.
     """
-    if not text:
-        return []
-    
-    # Strip leading/trailing whitespace from the entire text first
-    text = text.strip()
-    
-    # Split text into blocks by one or more blank lines and filter out empty blocks
-    blocks = [block.strip() for block in text.split('\n\n')]
-    return [block for block in blocks if block]
+    blocks = markdown.split("\n\n")
+    filtered_blocks = []
+    for block in blocks:
+        if block == "":
+            continue
+        block = block.strip()
+        filtered_blocks.append(block)
+    return filtered_blocks
 
 def block_to_block_type(block: str) -> BlockType:
     """
