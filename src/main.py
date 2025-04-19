@@ -1,10 +1,11 @@
 import os
+import sys
 import shutil
 from htmlnode import LeafNode, ParentNode, markdown_to_html_node
 from textnode import TextNode, TextType
 from md_to_textnode import extract_title
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath="/"):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     
     # Create any necessary directories for the destination path
@@ -26,6 +27,10 @@ def generate_page(from_path, template_path, dest_path):
     # Replace placeholders in the template
     final_html = template_content.replace("{{ Title }}", title)
     final_html = final_html.replace("{{ Content }}", html_content)
+    
+    # Replace root paths with basepath
+    final_html = final_html.replace('href="/', f'href="{basepath}')
+    final_html = final_html.replace('src="/', f'src="{basepath}')
     
     # Write the final HTML to the destination file
     with open(dest_path, 'w') as f:
@@ -58,7 +63,7 @@ def copy_directory(src, dst):
             print(f"Copying file: {src_file} -> {dst_file}")
             shutil.copy2(src_file, dst_file)
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath="/"):
     # Walk through all files and directories in the content directory
     for root, dirs, files in os.walk(dir_path_content):
         # Calculate the relative path from content directory
@@ -76,21 +81,24 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
                 dest_file_name = 'index.html' if file == 'index.md' else file.replace('.md', '.html')
                 dest_file = os.path.join(dest_dir_path, rel_path, dest_file_name)
                 
-                # Generate the HTML page
-                generate_page(src_file, template_path, dest_file)
+                # Generate the HTML page with basepath
+                generate_page(src_file, template_path, dest_file, basepath)
 
 def main():
-    # Copy static directory to public
+    # Get basepath from command line argument or default to "/"
+    basepath = sys.argv[1] if len(sys.argv) > 1 else "/"
+    
+    # Copy static directory to docs
     static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
-    public_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
-    copy_directory(static_dir, public_dir)
+    docs_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "docs")
+    copy_directory(static_dir, docs_dir)
     
     # Generate all pages from markdown to HTML
     content_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "content")
     template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "template.html")
     
-    # Generate all pages recursively
-    generate_pages_recursive(content_dir, template_path, public_dir)
+    # Generate all pages recursively with basepath
+    generate_pages_recursive(content_dir, template_path, docs_dir, basepath)
 
 if __name__ == "__main__":
     main()
