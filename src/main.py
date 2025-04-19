@@ -58,19 +58,39 @@ def copy_directory(src, dst):
             print(f"Copying file: {src_file} -> {dst_file}")
             shutil.copy2(src_file, dst_file)
 
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    # Walk through all files and directories in the content directory
+    for root, dirs, files in os.walk(dir_path_content):
+        # Calculate the relative path from content directory
+        rel_path = os.path.relpath(root, dir_path_content)
+        
+        # For each markdown file
+        for file in files:
+            if file.endswith('.md'):
+                # Get the full source path of the markdown file
+                src_file = os.path.join(root, file)
+                
+                # Calculate destination path:
+                # 1. Get the relative directory structure
+                # 2. Replace .md with .html
+                dest_file_name = 'index.html' if file == 'index.md' else file.replace('.md', '.html')
+                dest_file = os.path.join(dest_dir_path, rel_path, dest_file_name)
+                
+                # Generate the HTML page
+                generate_page(src_file, template_path, dest_file)
+
 def main():
     # Copy static directory to public
     static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
     public_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "public")
     copy_directory(static_dir, public_dir)
     
-    # Generate the index page from markdown to HTML
+    # Generate all pages from markdown to HTML
     content_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "content")
     template_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "template.html")
     
-    # Convert index.md to index.html
-    index_md_path = os.path.join(content_dir, "index.md")
-    index_html_path = os.path.join(public_dir, "index.html")
-    generate_page(index_md_path, template_path, index_html_path)
+    # Generate all pages recursively
+    generate_pages_recursive(content_dir, template_path, public_dir)
 
-main()
+if __name__ == "__main__":
+    main()
