@@ -178,30 +178,27 @@ def markdown_to_blocks(markdown: str) -> list[str]:
     return filtered_blocks
 
 def block_to_block_type(block: str) -> BlockType:
-    """
-    Takes a single block of markdown text and returns its BlockType.
-    Assumes the block has been stripped of leading/trailing whitespace.
-    """
-    # Check for code block (3 backticks)
-    if block.startswith("```") and block.endswith("```"):
-        return BlockType.CODE
-    
-    # Check for heading (1-6 # followed by space)
-    if re.match(r"^#{1,6} ", block.split("\n")[0]):
-        return BlockType.HEADING
-    
-    # Check for quote block (every line starts with >)
-    if all(line.startswith(">") for line in block.split("\n")):
-        return BlockType.QUOTE
-    
-    # Check for unordered list (every line starts with -)
-    if all(line.strip().startswith("- ") for line in block.split("\n")):
-        return BlockType.UNORDERED_LIST
-    
-    # Check for ordered list (lines start with 1., 2., etc)
     lines = block.split("\n")
-    if all(line.strip().startswith(f"{i+1}. ") for i, line in enumerate(lines)):
+
+    if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
+        return BlockType.HEADING
+    if len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
+        return BlockType.CODE
+    if block.startswith(">"):
+        for line in lines:
+            if not line.startswith(">"):
+                return BlockType.PARAGRAPH
+        return BlockType.QUOTE
+    if block.startswith("- "):
+        for line in lines:
+            if not line.startswith("- "):
+                return BlockType.PARAGRAPH
+        return BlockType.UNORDERED_LIST
+    if block.startswith("1. "):
+        i = 1
+        for line in lines:
+            if not line.startswith(f"{i}. "):
+                return BlockType.PARAGRAPH
+            i += 1
         return BlockType.ORDERED_LIST
-    
-    # Default to paragraph
     return BlockType.PARAGRAPH
