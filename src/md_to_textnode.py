@@ -1,4 +1,4 @@
-from src.textnode import TextNode, TextType
+from src.textnode import TextNode, TextType, BlockType
 import re
 
 def split_nodes_delimiter(
@@ -162,32 +162,31 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     
     return nodes
 
-def markdown_to_blocks(text: str) -> list[str]:
+def block_to_block_type(block: str) -> BlockType:
     """
-    Converts markdown text to a list of blocks.
-    Each block is separated by one or more empty lines.
+    Takes a single block of markdown text and returns its BlockType.
+    Assumes the block has been stripped of leading/trailing whitespace.
     """
-    if not text:
-        return []
-
-    blocks = []
-    current_block = []
+    # Check for code block (3 backticks)
+    if block.startswith("```") and block.endswith("```"):
+        return BlockType.CODE
     
-    # Split the text into lines and process them
-    lines = text.split("\n")
+    # Check for heading (1-6 # followed by space)
+    if re.match(r"^#{1,6} ", block.split("\n")[0]):
+        return BlockType.HEADING
     
-    for line in lines:
-        # If we encounter an empty line and have content in current_block
-        if not line.strip() and current_block:
-            # Join the current block lines and add to blocks
-            blocks.append("\n".join(current_block))
-            current_block = []
-        # If the line has content, add to current block
-        elif line.strip():
-            current_block.append(line.strip())
+    # Check for quote block (every line starts with >)
+    if all(line.startswith(">") for line in block.split("\n")):
+        return BlockType.QUOTE
     
-    # Don't forget to add the last block if it has content
-    if current_block:
-        blocks.append("\n".join(current_block))
+    # Check for unordered list (every line starts with -)
+    if all(line.strip().startswith("- ") for line in block.split("\n")):
+        return BlockType.UNORDERED_LIST
     
-    return blocks
+    # Check for ordered list (lines start with 1., 2., etc)
+    lines = block.split("\n")
+    if all(line.strip().startswith(f"{i+1}. ") for i, line in enumerate(lines)):
+        return BlockType.ORDERED_LIST
+    
+    # Default to paragraph
+    return BlockType.PARAGRAPH
