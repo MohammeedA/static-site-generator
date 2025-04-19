@@ -182,7 +182,7 @@ def block_to_block_type(block: str) -> BlockType:
 
     if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
         return BlockType.HEADING
-    if len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
+    if block.startswith("```") and block.rstrip().endswith("```"):
         return BlockType.CODE
     if block.startswith(">"):
         for line in lines:
