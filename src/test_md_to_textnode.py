@@ -4,6 +4,7 @@ from md_to_textnode import extract_markdown_images
 from md_to_textnode import extract_markdown_links
 from md_to_textnode import split_nodes_image
 from md_to_textnode import markdown_to_blocks
+from md_to_textnode import extract_title
 from textnode import TextNode, TextType
 
 class TestSplitNodesDelimiter(unittest.TestCase):
@@ -242,6 +243,46 @@ This is the same paragraph on a new line
                 "- This is a list\n- with items",
             ],
         )
+
+class TestExtractTitle(unittest.TestCase):
+    def test_basic_title(self):
+        markdown = "# Hello"
+        self.assertEqual(extract_title(markdown), "Hello")
+
+    def test_title_with_spaces(self):
+        markdown = "#    Hello World    "
+        self.assertEqual(extract_title(markdown), "Hello World")
+
+    def test_title_with_multiple_lines(self):
+        markdown = """
+        Some text here
+        # Main Title
+        More text here
+        """
+        self.assertEqual(extract_title(markdown), "Main Title")
+
+    def test_empty_markdown(self):
+        with self.assertRaises(ValueError) as context:
+            extract_title("")
+        self.assertTrue("Markdown content is empty" in str(context.exception))
+
+    def test_no_h1_header(self):
+        markdown = """
+        No header here
+        Just some text
+        ## This is h2
+        """
+        with self.assertRaises(ValueError) as context:
+            extract_title(markdown)
+        self.assertTrue("No h1 header" in str(context.exception))
+
+    def test_multiple_h1_returns_first(self):
+        markdown = """
+        # First Title
+        Some content
+        # Second Title
+        """
+        self.assertEqual(extract_title(markdown), "First Title")
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

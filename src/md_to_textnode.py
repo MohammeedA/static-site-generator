@@ -202,3 +202,20 @@ def block_to_block_type(block: str) -> BlockType:
             i += 1
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
+
+def extract_title(markdown: str) -> str:
+    """
+    Extracts the first h1 header (line starting with single #) from markdown text.
+    Returns the header text without the # and whitespace.
+    Raises ValueError if no h1 header is found.
+    """
+    if not markdown:
+        raise ValueError("Markdown content is empty")
+    
+    lines = markdown.strip().split('\n')
+    for line in lines:
+        line = line.strip()
+        if line.startswith('# ') and not line.startswith('## '):  # Make sure it's h1 not h2 or higher
+            return line[2:].strip()
+            
+    raise ValueError("No h1 header (# ) found in markdown content")
